@@ -46,15 +46,10 @@ public class AnagramDictionary {
             if (wordSet.contains(word)) continue;
 
             String sortedWord = sortString(word);
-            Set<String> sortedSet = lettersToWords.get(sortedWord);
+            Set<String> sortedSet = lettersToWords.getOrDefault(sortedWord, new HashSet<String>());
 
-            if (sortedSet == null) {
-                Set<String> set = new HashSet<>();
-                set.add(word);
-                lettersToWords.put(sortedWord, set);
-            } else {
-                sortedSet.add(word);
-            }
+            sortedSet.add(word);
+            lettersToWords.put(sortedWord, sortedSet);
 
             wordSet.add(word);
             wordList.add(word);
@@ -103,13 +98,11 @@ public class AnagramDictionary {
         // A word is considered anagram of itself, so need to exclude it
         // Preallocate space for list for potential savings
         // Emulate Set difference manually
-        int listSize = anagramSet.size();
-        List<String> res = new ArrayList<>(listSize);
+        int LIST_SIZE = anagramSet.size();
+        List<String> res = new ArrayList<>(LIST_SIZE - 1);
 
-        while (--listSize > 0) {
-            for (String word : anagramSet) {
-                if (!word.equals(targetWord)) res.add(word);
-            }
+        for (String word : anagramSet) {
+            if (!word.equals(targetWord)) res.add(word);
         }
 
         return res;
@@ -138,7 +131,7 @@ public class AnagramDictionary {
         for (int i = randInt; i < randInt + size; i++) {
             String word = wordList.get(i % size);
             String sorted = sortString(word);
-            if (lettersToWords.get(sorted).size() >= MIN_NUM_ANAGRAMS) {
+            if (lettersToWords.get(sorted).size() > MIN_NUM_ANAGRAMS) {
                 return word;
             }
         }
