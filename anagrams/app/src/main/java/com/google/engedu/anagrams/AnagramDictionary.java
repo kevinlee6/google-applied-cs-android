@@ -33,54 +33,32 @@ public class AnagramDictionary {
     private static final int DEFAULT_WORD_LENGTH = 3;
     private static final int MAX_WORD_LENGTH = 7;
     private Random random = new Random();
+
     private List<String> wordList = new ArrayList<>();
     private Set<String> wordSet = new HashSet<>();
-    private Map<String, ArrayList<String>> lettersToWords = new HashMap<>();
+    private Map<String, Set<String>> lettersToWords = new HashMap<>();
 
     public AnagramDictionary(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
         String line;
         while((line = in.readLine()) != null) {
             String word = line.trim();
+            if (wordSet.contains(word)) continue;
+
             String sortedWord = sortString(word);
-            if (lettersToWords.get(sortedWord) != null) {
-                lettersToWords.get(sortedWord).add(word);
+            Set<String> sortedSet = lettersToWords.get(sortedWord);
+
+            if (sortedSet == null) {
+                Set<String> set = new HashSet<>();
+                set.add(word);
+                lettersToWords.put(sortedWord, set);
             } else {
-                ArrayList<String> arr = new ArrayList<String>();
-                arr.add(word);
-                lettersToWords.put(sortedWord, arr);
+                sortedSet.add(word);
             }
+
             wordSet.add(word);
             wordList.add(word);
         }
-    }
-
-    private boolean isAnagram(String word, String base) {
-        // INCOMPLETE
-        Map<Character, Integer> counter = new HashMap<>();
-
-        // Build counter
-        for (char ch : base.toCharArray()) {
-            int prev = counter.getOrDefault(ch, 0);
-            counter.put(ch, prev + 1);
-        }
-
-        for (char ch : word.toCharArray()) {
-            int val = counter.getOrDefault(ch, -1);
-            if (val == 0) {
-                return false;
-            } else {
-                counter.put(ch, val - 1);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isGoodWord(String word, String base) {
-        // Early return if not valid word to begin with
-        return wordSet.contains(word) && isAnagram(word, base) && !word.contains(base);
     }
 
     private String sortString(String inp) {
@@ -90,23 +68,51 @@ public class AnagramDictionary {
         return new String(sortedInpArr);
     }
 
+//    private boolean isAnagram(String word, String base) {
+//        // INCOMPLETE
+//        Map<Character, Integer> counter = new HashMap<>();
+//
+//        // Build counter
+//        for (char ch : base.toCharArray()) {
+//            int prev = counter.getOrDefault(ch, 0);
+//            counter.put(ch, prev + 1);
+//        }
+//
+//        for (char ch : word.toCharArray()) {
+//            int val = counter.getOrDefault(ch, -1);
+//            if (val == 0) {
+//                return false;
+//            } else {
+//                counter.put(ch, val - 1);
+//            }
+//            return true;
+//        }
+//
+//        return false;
+//    }
+
+    public boolean isGoodWord(String word, String base) {
+        return wordSet.contains(word) && !word.contains(base);
+    }
+
+
     public List<String> getAnagrams(String targetWord) {
         String sortedTarget = sortString(targetWord);
-        // TODO: Need to account for targetWord being anagram of itself
-        if (lettersToWords.get(sortedTarget) != null) {
-            return lettersToWords.get(sortedTarget);
-        }
+        Set<String> anagramSet = lettersToWords.get(sortedTarget);
 
-        ArrayList<String> result = new ArrayList<String>();
+        // A word is considered anagram of itself, so need to exclude it
+        // Preallocate space for list for potential savings
+        // Emulate Set difference manually
+        int listSize = anagramSet.size();
+        List<String> res = new ArrayList<>(listSize);
 
-        for (String word : wordSet) {
-            String sortedWord = sortString(word);
-            if (isGoodWord(word, targetWord) && sortedWord.equals(sortedTarget)) {
-                result.add(word);
+        while (--listSize > 0) {
+            for (String word : anagramSet) {
+                if (!word.equals(targetWord)) res.add(word);
             }
         }
 
-        return result;
+        return res;
     }
 
     public List<String> getAnagramsWithOneMoreLetter(String word) {
@@ -116,7 +122,7 @@ public class AnagramDictionary {
             charArr[i] = (char)(i + 97);
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (char ch : charArr) {
             List anagrams = getAnagrams(word + ch);
             result.addAll(anagrams);
@@ -128,14 +134,17 @@ public class AnagramDictionary {
 
     public String pickGoodStarterWord() {
         int size = wordList.size();
-        int randomInt = (int)(Math.random() * size);
-        for (int i = randomInt; i < randomInt + size; i++) {
+        int randInt = random.nextInt(size);
+        for (int i = randInt; i < randInt + size; i++) {
             String word = wordList.get(i % size);
             String sorted = sortString(word);
             if (lettersToWords.get(sorted).size() >= MIN_NUM_ANAGRAMS) {
                 return word;
             }
         }
+
+        // If code enters here, then there are no words which satisfy MIN_NUM_ANAGRAMS
+        // TODO: Throw exception instead and handle error
         throw new Error();
     }
 }
