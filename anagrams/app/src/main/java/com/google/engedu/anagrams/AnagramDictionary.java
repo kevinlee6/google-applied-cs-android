@@ -93,13 +93,13 @@ public class AnagramDictionary {
 
     public List<String> getAnagrams(String targetWord) {
         String sortedTarget = sortString(targetWord);
-        Set<String> anagramSet = lettersToWords.get(sortedTarget);
+        Set<String> anagramSet = lettersToWords.getOrDefault(sortedTarget, new HashSet<String>());
 
         // A word is considered anagram of itself, so need to exclude it
         // Preallocate space for list for potential savings
         // Emulate Set difference manually
         int LIST_SIZE = anagramSet.size();
-        List<String> res = new ArrayList<>(LIST_SIZE - 1);
+        List<String> res = new ArrayList<>(Math.max(LIST_SIZE - 1, 0));
 
         for (String word : anagramSet) {
             if (!word.equals(targetWord)) res.add(word);
@@ -109,19 +109,13 @@ public class AnagramDictionary {
     }
 
     public List<String> getAnagramsWithOneMoreLetter(String word) {
-        // generate a-z
-        char[] charArr = new char[26];
-        for (int i = 0; i < 26; i++) {
-            charArr[i] = (char)(i + 97);
-        }
-
         List<String> result = new ArrayList<>();
-        for (char ch : charArr) {
+        for (int i = 0; i < 26; i++) {
+            char ch = (char)(i + 97);
             List anagrams = getAnagrams(word + ch);
             result.addAll(anagrams);
         }
 
-        result.addAll(getAnagrams(word));
         return result;
     }
 
@@ -137,7 +131,7 @@ public class AnagramDictionary {
         }
 
         // If code enters here, then there are no words which satisfy MIN_NUM_ANAGRAMS
-        // TODO: Throw exception instead and handle error
+        // TODO: Throw exception instead and handle exception
         throw new Error();
     }
 }
