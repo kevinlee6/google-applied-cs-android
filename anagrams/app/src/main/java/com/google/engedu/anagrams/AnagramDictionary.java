@@ -63,29 +63,6 @@ public class AnagramDictionary {
         return new String(sortedInpArr);
     }
 
-//    private boolean isAnagram(String word, String base) {
-//        // INCOMPLETE
-//        Map<Character, Integer> counter = new HashMap<>();
-//
-//        // Build counter
-//        for (char ch : base.toCharArray()) {
-//            int prev = counter.getOrDefault(ch, 0);
-//            counter.put(ch, prev + 1);
-//        }
-//
-//        for (char ch : word.toCharArray()) {
-//            int val = counter.getOrDefault(ch, -1);
-//            if (val == 0) {
-//                return false;
-//            } else {
-//                counter.put(ch, val - 1);
-//            }
-//            return true;
-//        }
-//
-//        return false;
-//    }
-
     public boolean isGoodWord(String word, String base) {
         return wordSet.contains(word) && !word.contains(base);
     }
@@ -114,6 +91,27 @@ public class AnagramDictionary {
             char ch = (char)(i + 97);
             List anagrams = getAnagrams(word + ch);
             result.addAll(anagrams);
+        }
+
+        return result;
+    }
+
+    // Optional method; works
+    public List<String> getAnagramsWithAtLeastKMoreLetters(String word, int k) {
+        List<String> result = new ArrayList<>();
+        if (k == 0) { return result; }
+
+        for (int i = 0; i < 26; i++) {
+            char ch = (char)(i + 97);
+            String newWord = word + ch;
+            List anagrams = getAnagrams(newWord);
+
+            // Could pull out, but hoping for early return to prune recursion tree
+            if (anagrams.size() > 0) {
+                List<String> nextAnagrams = getAnagramsWithAtLeastKMoreLetters(newWord, k-1);
+                result.addAll(nextAnagrams);
+                result.addAll(anagrams);
+            }
         }
 
         return result;
