@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Scarne\'s Dice</string>
+    <string name="humanScoreLabelTV">Your Score:</string>
+    <string name="cpuScoreLabelTV">CPU Score:</string>
+</resources>
